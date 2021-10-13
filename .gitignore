@@ -1,3 +1,5 @@
 bin/
 libsciter.dylib
+sciter.dll
+res.go
 .DS_Store

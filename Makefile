@@ -1,8 +1,6 @@
 # Modify this to the patch of your sciter-js-sdk
 SCITER_BIN = /Users/Aivan/Documents/Desktop/PL/sciter-js-sdk/bin
 
-# Mac stuff below
-
 link:
 	ln -s $(SCITER_BIN)/libsciter.dylib libsciter.dylib
 
@@ -10,7 +8,10 @@ link:
 # Even though you have the `DYD_LIBRARY_PATH` on your environment variables
 run:
 ifeq ($(OS),Windows_NT)
-	echo "TODO"
+	cp $(SCITER_BIN)/windows/x64/sciter.dll ./sciter.dll
+	chmod +x $(SCITER_BIN)/windows/packfolder.exe
+	$(SCITER_BIN)/windows/packfolder.exe ./res res.go -v resources -go
+	go run .
 else
 	chmod +x $(SCITER_BIN)/macosx/packfolder
 	$(SCITER_BIN)/macosx/packfolder ./res res.go -v resources -go
@@ -20,15 +21,20 @@ endif
 clean:
 	rm -rf bin
 
-build: clean
+update: 
+	curl -L https://unpkg.com/htm/preact/standalone.mjs?module > ./res/preact.js
+
+build: clean update
 ifeq ($(OS),Windows_NT)
-	echo "TODO"
+	mkdir bin
+	chmod +x $(SCITER_BIN)/windows/packfolder.exe
+	cp $(SCITER_BIN)/windows/x64/sciter.dll ./bin/sciter.dll
+	go build -ldflags="-s -w -H=windowsgui" -o ./bin/app.exe .
 else
 	mkdir bin
 	cd bin && mkdir temp
 	cd bin/temp && mkdir frameworks && mkdir assets
 	chmod +x $(SCITER_BIN)/macosx/packfolder
-	curl -L https://unpkg.com/htm/preact/standalone.mjs?module > ./res/preact.js
 	$(SCITER_BIN)/macosx/packfolder ./res res.go -v resources -go
 	go build -ldflags="-s -w" -o ./bin/temp/assets/app .
 	cp $(SCITER_BIN)/macosx/libsciter.dylib ./bin/temp/frameworks/libsciter.dylib
